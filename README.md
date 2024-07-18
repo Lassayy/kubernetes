@@ -72,41 +72,41 @@ Deploiement fastapi :
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fastapi-redis-deployment
+  name: fastapi-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fastapi-redis
+      app: fastapi
   template:
     metadata:
       labels:
-        app: fastapi-redis
+        app: fastapi
     spec:
       containers:
-      - name: fastapi-redis
+      - name: fastapi
         image: lassay/fastapi-redis-app:latest
+        env:
+        - name: REDIS_HOST
+          value: "redis-service"
         ports:
         - containerPort: 8000
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+spec:
+  selector:
+    app: fastapi
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      nodePort: 30081
+  type: ClusterIP
+
 ---
 apiVersion: v1
 kind: Service
